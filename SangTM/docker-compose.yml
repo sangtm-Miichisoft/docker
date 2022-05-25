@@ -1,0 +1,26 @@
+version: "3.4"
+services:
+  docker-nginx:
+    build: './docker/nginx/'
+    depends_on:
+      - docker-php
+    networks:
+      - backend
+    ports:
+      - '8889'
+    volumes:
+      - ./source/:/var/www/html/
+    restart: always
+  docker-php:
+    build:
+      context: './docker/php/'
+      target: php
+    networks:
+      - backend
+    volumes:
+      - ./source/:/var/www/html/
+      - ./docker/php/config/config.ini:/usr/local/etc/php/conf.d/uploads.ini
+    restart: always
+
+networks:
+  backend:
