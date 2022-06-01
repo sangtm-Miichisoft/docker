@@ -1,26 +1,42 @@
-version: "3.4"
-services:
-  docker-nginx:
-    build: './docker/nginx/'
-    depends_on:
-      - docker-php
-    networks:
-      - backend
-    ports:
-      - '8889'
-    volumes:
-      - ./source/:/var/www/html/
-    restart: always
-  docker-php:
-    build:
-      context: './docker/php/'
-      target: php
-    networks:
-      - backend
-    volumes:
-      - ./source/:/var/www/html/
-      - ./docker/php/config/config.ini:/usr/local/etc/php/conf.d/uploads.ini
-    restart: always
+version: '3.9'
 
-networks:
-  backend:
+services:
+  nestjs:
+    container_name: docker_nestjs
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    working_dir: /var/www/docker-nestjs
+    volumes:
+      - ./:/var/www/docker-nestjs
+    links:
+      - mysql:mysql
+    ports:
+      - "3001:3000"
+
+  mysql:
+    image: mysql:latest
+    container_name: docker_mysql
+    tty: true
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: docker_nestjs
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./mysql:/var/lib/mysql
+    command: ['mysqld', '--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+  
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: docker_phpmyadmin
+    environment:
+     - PMA_ARBITRARY=1
+     - PMA_HOST=mysql
+     - PMA_PORT=3306
+     - MYSQL_USER=root
+     - MYSQL_PASSWORD=root
+    ports:
+     - 8081:80
+    volumes:
+     - /sessions
