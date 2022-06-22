@@ -1,17 +1,17 @@
 version: "3.4"
 services:
-  docker-nginx:
+  sang-nginx:
     build: './docker/nginx/'
     depends_on:
-      - docker-php
+      - sang-php
     networks:
       - backend
     ports:
-      - '8889'
+      - '8890:80'
     volumes:
       - ./source/:/var/www/html/
     restart: always
-  docker-php:
+  sang-php:
     build:
       context: './docker/php/'
       target: php
@@ -21,6 +21,19 @@ services:
       - ./source/:/var/www/html/
       - ./docker/php/config/config.ini:/usr/local/etc/php/conf.d/uploads.ini
     restart: always
-
+  sang-mysql:
+    image: 'mysql:5.7'
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+        - '3309:3306'
+    environment:
+        MYSQL_ROOT_PASSWORD: 'sangtm'
+        MYSQL_DATABASE: 'sangtm'
+        MYSQL_PASSWORD: 'sang123'
+        MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    volumes:
+        - ./source/:/var/www/html/
+    networks:
+      - backend
 networks:
   backend:
